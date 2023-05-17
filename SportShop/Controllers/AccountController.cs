@@ -3,53 +3,104 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
-using System.Web.Security;
-using System.Linq;
-using SportShop.Models;
+using Khareedo.Models;
+using System.Data;
 
-namespace SportShop.Controllers
+namespace Khareedo.Controllers
 {
     public class AccountController : Controller
     {
-        TACV_DBEntities3 entity = new TACV_DBEntities3();
+        KhareedoEntities db = new KhareedoEntities();
 
         // GET: Account
+        public ActionResult Index()
+        {
+            this.GetDefaultData();
+
+            var usr = db.Customers.Find(TempShpData.UserID);
+            return View(usr);
+
+        }
+
+
+        //REGISTER CUSTOMER
+        [HttpPost]
+        public ActionResult Register(Customer cust)
+        {
+            if (ModelState.IsValid)
+            {
+                db.Customers.Add(cust);
+                db.SaveChanges();
+
+                Session["username"] = cust.UserName;
+                TempShpData.UserID = GetUser(cust.UserName).CustomerID;          
+                return RedirectToAction("Index","Home");
+            }
+            return View();
+        }
+
+       
+       
+        //LOG IN
         public ActionResult Login()
         {
             return View();
         }
-        public ActionResult Signup()
+
+         [HttpPost]
+        public ActionResult Login(FormCollection formColl)
         {
-            return View();
-        }
-        [HttpPost]
-        public ActionResult Login(LoginViewModel credentials)
-        {
-            bool userExist = entity.UsersTb1.Any(x => x.Email == credentials.Email && x.Passcode == credentials.Password);
-            UsersTb1 u = entity.UsersTb1.FirstOrDefault(x => x.Email == credentials.Email && x.Passcode == credentials.Password);
-            if (userExist)
+            string usrName = formColl["UserName"];
+            string Pass = formColl["Password"];
+
+            if (ModelState.IsValid)
             {
-                FormsAuthentication.SetAuthCookie(u.Username, false); 
-                return RedirectToAction("Index", "Home");
+                var cust = (from m in db.Customers
+                            where (m.UserName == usrName && m.Password == Pass)
+                            select m).SingleOrDefault();
 
+                if (cust !=null )
+                {
+                    TempShpData.UserID = cust.CustomerID;
+                    Session["username"] = cust.UserName;
+                    return RedirectToAction("Index", "Home");
+                }
+                      
             }
-            ModelState.AddModelError("", "Username or Password is wrong "); 
-
             return View();
         }
-        [HttpPost]
-        public ActionResult Signup(UsersTb1 userinfo)
+
+        //LOG OUT
+         public ActionResult Logout()
+         {
+             Session["username"] = null;
+             TempShpData.UserID = 0;
+             TempShpData.items = null;
+             return RedirectToAction("Index", "Home");
+         }
+
+       
+
+        public Customer GetUser(string _usrName)
         {
-            entity.UsersTb1.Add(userinfo);
-            entity.SaveChanges();
-            return RedirectToAction("Login");
+            var cust = (from c in db.Customers
+                        where c.UserName == _usrName
+                        select c).FirstOrDefault();
+            return cust;
         }
 
-
-        public ActionResult Signout()
+        //UPDATE CUSTOMER DATA
+        [HttpPost]
+        public ActionResult Update(Customer cust)
         {
-            FormsAuthentication.SignOut();
-            return RedirectToAction("Login");
+            if (ModelState.IsValid)
+            {
+                db.Entry(cust).State = EntityState.Modified;
+                db.SaveChanges();
+                Session["username"] = cust.UserName;
+                return RedirectToAction("Index", "Home");
+            }
+            return View();
         }
     }
 }
