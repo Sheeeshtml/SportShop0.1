@@ -49,8 +49,8 @@ Pentru a dezvolta și porni proiectul în ASP.NET cu o bază de date SQL, veți 
 
 Acestea sunt doar câteva dintre programele și instrumentele necesare pentru a dezvolta și porni un proiect ASP.NET cu o bază de date SQL. Asigurați-vă că verificați și alte dependențe specifice proiectului pe care îl dezvoltați și instalați-le în consecință.
 
-## Team/Echipă
-Vames Liviu 
-Braguta Maxim 
-Edu Nichita 
-Postolache Patric 
+# Team/Echipă 
+1.Vames Liviu 
+2.Braguta Maxim 
+3.Edu Nichita 
+4.Postolache Patric 
